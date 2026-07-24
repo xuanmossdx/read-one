@@ -1,10 +1,10 @@
-# Read133 设计开发总纲
+# read-one 设计开发总纲
 
 本文档是本仓库设计与开发的**唯一总纲**。专题文档（便携、章节 TOC、结构债清单）服从本总纲。
 
 ## 1. 产品定位
 
-纯净单机本地阅读器（txt / epub / mobi），产品名「单行阅读器」：
+纯净单机本地阅读器（txt / epub / mobi），产品名「read-one」：
 
 - **已删除**登录 / 注册 / 会员 / 支付 / 应用中心 / 网页抓取（窗体与引擎已物理删除）
 - 数据与阅读进度保存在程序目录（整夹搬家可续读）；启动续读；约 **30s** 自动存进度
@@ -32,7 +32,7 @@
 
 1. 融入原管道：`ConfigUtil` / `ConfigWindow` / `DataProcess` / `JumpChapterWindow`
 2. 禁止平行设置写入与平行进度库
-3. 新逻辑进 `Read133.Utils` 服务类；`MainWindow` 只接线
+3. 新逻辑进 `ReadOne.Utils` 服务类；`MainWindow` 只接线
 4. Schema 变更只走 `DbMigrate`
 5. 文档与代码同提交
 
@@ -87,8 +87,8 @@ flowchart TB
 
 - 命名：新代码英文完整名；保留反编译 `mi*` 控件名
 - 错误：捕获并记 `Util.AddLog`，不把原始异常堆栈甩给用户
-- 测试：`Read133.Tests`；覆盖 PortablePath、章节标题、配置 UPSERT、扫描排除；临时目录隔离
-- 编译：`build.bat` → `dist\Read133\`；发布混淆：`publish.bat` → `dist\单行阅读器\`（不覆盖 `D:\read`）
+- 测试：`ReadOne.Tests`；覆盖 PortablePath、章节标题、配置 UPSERT、扫描排除；临时目录隔离
+- 编译：`build.bat` → `dist\read-one\`；发布混淆：`publish.bat` → 仓库根 `read-one\`（不覆盖 `D:\read`）
 - 出厂默认（`ConfigUtil.Default`）：仿宋 / 白底近全透明 / 字透明度 22 / **多行模式**（`Sys.Mod=1`，按窗口宽度折行，上下键翻页）/ 隐藏任务栏等；「移开藏字」默认开（仅 Opacity）；「恢复默认」走同一套
 - 单行模式（右键可切换）：一行横排，超宽左右滚；设置里「换页」仅作用于单行横向翻段，不是自动折行
 - 每次启动 `EnsureFactoryDefaultsApplied`：若 `FactoryDefaultsRevision` 变化，用出厂默认**覆盖**已有 `db5.data` 设置键；阅读进度与书签保留
