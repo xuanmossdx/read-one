@@ -8,9 +8,9 @@
 
 1. 打开 [Releases](https://github.com/xuanmossdx/read-one/releases)，下载最新 zip  
 2. 解压到任意文件夹  
-3. 运行 `read-one.exe`
+3. **推荐双击 `Start.bat` 启动**（若本机缺少运行库，会自动安装 .NET Framework 4.7.2，可能弹出管理员确认；装完如提示重启，重启后再开一次即可）
 
-若提示缺少运行库，或程序无法启动，请先运行同目录下的 **`Install-Runtime.bat`**（会安装微软 .NET Framework 4.7.2，可能需要管理员权限，装完后如提示重启请重启再打开）。
+也可以直接运行 `read-one.exe`。若打不开，请运行 `Install-Runtime.bat`，或改用上面的 `Start.bat`。
 
 阅读进度、书签等会保存在程序所在目录。
 
