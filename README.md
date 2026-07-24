@@ -1,8 +1,8 @@
-﻿# read-one
+# read-one
 
 本地隐蔽阅读器，支持 txt / epub / mobi，可选 DeepSeek AI 助手。
 
-**当前版本：1.0**
+**当前版本：1.0.3**
 
 ## 下载与安装
 
