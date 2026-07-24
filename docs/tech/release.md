@@ -8,12 +8,12 @@
 
 | 路径 | 内容 |
 |------|------|
-| 源码树 | 可编译工程与设计文档 |
-| `单行阅读器\` | **可提交的干净正式版**（混淆 exe + lib，无用户数据） |
+| 源码仓 [read](https://github.com/xuanmossdx/read) | 可编译工程与完整设计文档；含 `单行阅读器\` |
+| 发行仓 [read-one](https://github.com/xuanmossdx/read-one) | 用户向 README + 文档摘录；**正式包 zip 挂在 Releases** |
 | `dist\` | 本地缓存（gitignore） |
 | `D:\read` | 作者自用安装目录（**不在本仓**） |
 
-发行仓：手动拷贝 `单行阅读器\` + 用户 README。
+发行仓不必再手工上传：本地 `publish.bat` 后，用 `gh release create` 上传 `Read133-vX.Y.zip` 即可。
 
 ## 命令
 
