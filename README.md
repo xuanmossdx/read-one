@@ -1,30 +1,35 @@
-# read-one · 正式版
+# read-one
 
-纯本地隐蔽阅读器（txt / epub / mobi）+ 可选 DeepSeek 官方 API 助手。
+本地隐蔽阅读器，支持 txt / epub / mobi，可选 DeepSeek AI 助手。
 
-**当前版本：1.0**（混淆正式包，无用户数据）· 产品名 **read-one**
+**当前版本：1.0**
 
-## 下载
+## 下载与安装
 
-请到本仓库 **[Releases](https://github.com/xuanmossdx/read-one/releases)** 下载最新 zip（约 1.7 MB 压缩包 / 解压约 3.4 MB）。
+1. 打开 [Releases](https://github.com/xuanmossdx/read-one/releases)，下载最新 zip  
+2. 解压到任意文件夹  
+3. 运行 `read-one.exe`
 
-解压后直接运行 `read-one.exe`。数据会保存在程序同目录（便携）。
+阅读进度、书签等会保存在程序所在目录。
 
-> 源码与开发文档在：[xuanmossdx/read](https://github.com/xuanmossdx/read)
+> 需要源码？见 [xuanmossdx/read](https://github.com/xuanmossdx/read)
 
-## 功能概要
+## 主要功能
 
-- 书架 / 最近阅读 / 章节目录 / 书签  
-- 单行模式 / 多行模式、主题字号行距、听书、老板键  
-- 启动续读、自动存进度  
-- AI 助手（需自备 DeepSeek API Key）
+- 书架、最近阅读、章节目录、书签  
+- 单行 / 多行模式，主题、字号、行距  
+- 听书、老板键  
+- 启动后续读上次进度  
+- AI 助手（需自行配置 DeepSeek API Key）
 
-## 使用注意
+## 更新
 
-- **不要**把含进度的整个目录当「干净包」再分发；干净包不含 `db5.data`、书库、日志、`ai-presets-custom.json`  
-- 更新时只替换程序文件，保留自己的 `db5.data` 与书籍  
-- Windows，目标 .NET Framework 4.7.2（x86）
+下载新版本后，用新文件覆盖旧程序文件即可；请保留原目录里的数据文件和书籍，以免丢失进度。
 
-## 文档
+## 系统要求
 
-本仓 `docs/` 为面向用户的说明摘录；完整设计与源码见源码仓。
+Windows，需已安装 .NET Framework 4.7.2（x86）。
+
+## 更多说明
+
+见 [docs/](docs/)。
