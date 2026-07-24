@@ -27,7 +27,7 @@
 
 ## 关联
 
-- `Read133/DeepSeek/*`：客户端与 UI  
+- `src/DeepSeek/*`：客户端与 UI  
 - `MainWindow.V2Features.cs`：模式切换与热键  
 - `ConfigUtil`：与阅读器其它设置分离（AI 走 `t_KeyValue` section=`AI`）；系统代理节 `Proxy` 供 AI HTTP 使用
 

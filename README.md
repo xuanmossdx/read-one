@@ -1,21 +1,21 @@
-# 单行阅读器 · 正式版
+# read-one · 正式版
 
 纯本地隐蔽阅读器（txt / epub / mobi）+ 可选 DeepSeek 官方 API 助手。
 
-**当前版本：1.0**（混淆正式包，无用户数据）
+**当前版本：1.0**（混淆正式包，无用户数据）· 产品名 **read-one**
 
 ## 下载
 
 请到本仓库 **[Releases](https://github.com/xuanmossdx/read-one/releases)** 下载最新 zip（约 1.7 MB 压缩包 / 解压约 3.4 MB）。
 
-解压后直接运行 `Read133.exe`。数据会保存在程序同目录（便携）。
+解压后直接运行 `read-one.exe`。数据会保存在程序同目录（便携）。
 
 > 源码与开发文档在：[xuanmossdx/read](https://github.com/xuanmossdx/read)
 
 ## 功能概要
 
 - 书架 / 最近阅读 / 章节目录 / 书签  
-- 单行 / 多行、主题字号行距、听书、老板键  
+- 单行模式 / 多行模式、主题字号行距、听书、老板键  
 - 启动续读、自动存进度  
 - AI 助手（需自备 DeepSeek API Key）
 
