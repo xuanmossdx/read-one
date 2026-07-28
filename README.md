@@ -1,18 +1,20 @@
-# read-one
+﻿# read-one
 
 纯本地隐蔽阅读器（支持 txt / epub / mobi），可选 DeepSeek AI 助手与 B 站小窗。
 
-**当前版本：1.0.6**
+**当前版本：1.0.7**
 
-## 下载与安装
+## 仓库内容
 
-1. 从 [Releases](https://github.com/xuanmossdx/read-one/releases) 下载最新 zip  
-2. 解压到任意文件夹  
-3. **推荐双击 `Start.bat` 启动**（若本机缺少运行库，会自动安装 .NET Framework 4.7.2，可能弹出管理员确认；装好后若提示重启，重启后再开一次即可）
+- `正式版/`：主包，本体控制在 10 MB 内  
+- `依赖包/`：.NET Framework 4.7.2 离线安装包 + 一键安装脚本  
 
-也可以直接运行 `read-one.exe`；若打不开，可先运行 `Install-Runtime.bat`，或仍用 `Start.bat`。
+## 使用方式
 
-阅读进度、书签等会保存在程序所在目录。
+1. 先下载或解压 `正式版/`
+2. **优先运行 `正式版\Start.bat`**
+3. 若提示缺少运行库，再下载或解压 `依赖包/`，运行 `依赖包\Install-Runtime.bat`
+4. 安装完后再打开 `正式版\Start.bat` 或 `read-one.exe`
 
 ## 主要功能
 
@@ -21,13 +23,9 @@
 - 听书语速调节  
 - 启动续读、自动存进度  
 - AI 助手（需自行填写 DeepSeek API Key）  
-- **B 站视频小窗**（需本机安装 [WebView2 Runtime x86](https://developer.microsoft.com/microsoft-edge/webview2/)）：整体缩小视野、滚轮可上下滚动、快捷键拖动、老板键联动暂停  
+- B 站视频小窗：整体缩小视野、滚轮纵向浏览、快捷键拖动、老板键联动暂停  
 - 听书 / 小窗时可静音指定扬声器，防外放  
 
-## 更新
+## 文档
 
-覆盖解压新版本到原程序目录即可；请保留同目录下的数据文件（书籍、进度等）以免丢失。
-
-## 使用说明
-
-见 [docs/](docs/)。
+见 `docs/`。
