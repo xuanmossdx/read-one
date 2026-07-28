@@ -2,7 +2,7 @@
 
 纯本地隐蔽阅读器（支持 txt / epub / mobi），可选 DeepSeek AI 助手与 B 站小窗。
 
-**当前版本：1.0.5**
+**当前版本：1.0.6**
 
 ## 下载与安装
 
@@ -21,7 +21,7 @@
 - 听书语速调节  
 - 启动续读、自动存进度  
 - AI 助手（需自行填写 DeepSeek API Key）  
-- **B 站视频小窗**（需本机安装 [WebView2 Runtime x86](https://developer.microsoft.com/microsoft-edge/webview2/)）：整体缩小视野、快捷键拖动、老板键联动暂停  
+- **B 站视频小窗**（需本机安装 [WebView2 Runtime x86](https://developer.microsoft.com/microsoft-edge/webview2/)）：整体缩小视野、滚轮可上下滚动、快捷键拖动、老板键联动暂停  
 - 听书 / 小窗时可静音指定扬声器，防外放  
 
 ## 更新
