@@ -16,9 +16,9 @@
    - Esc 关闭；空格播放/暂停；双击恢复默认大小
 4. **选目录**：`FolderBrowserDialog` → `LocalVideoLibraryScanner.ScanFolder` 扫描 `*.mp4`（顺带 `*.mkv`/`*.avi`，含子目录）→ 按文件名排序 → 从上次索引或第一集开播。
 5. **播完自动下一集**；到末尾停住并暂停，不循环。
-6. **老板键**：可见则 `Pause` + `Hide`；恢复只 `Show`，**不自动续播**（防外放）。
+6. **老板键**：可见则 `Pause` + `Hide`；主窗已藏、仅再藏本小窗时同样先 `Pause` 再 `Hide`；恢复只 `Show`，**不自动续播**（防外放）。
 7. 扬声器静音：打开小窗 → `SpeakerMuteController.SetLocalVideoActive(true)`；与听书/B 站共用规则。`MediaElement` 固定 `Volume=1`、`IsMuted=false`，响度只跟**系统音量 / 当前默认输出设备**；「静音扬声器」只静音配置的扬声器端点，耳机等其它设备应仍有声。
-8. 配置（`Other`）：窗位宽高、上次目录、上次列表索引；不写入干净正式包。
+8. 配置（`Other`）：窗位宽高、上次目录、上次列表索引；负坐标副屏可保存；恢复时夹到虚拟桌面可见区。不写入干净正式包。
 
 ## 关联影响
 
@@ -35,6 +35,9 @@
 | 列表末尾播完 | 暂停，提示「列表播放完毕」 |
 | Esc / 右键关闭 | 关窗停播并清 Source |
 | 老板键隐藏 | 暂停后 Hide；恢复不 Resume |
+| 进度条热区 | 与条高同为 28px；热区内左键不播/暂停 |
+| 拖进度松在窗外 | `LostMouseCapture` / 窗 `PreviewMouseLeftButtonUp` 结束 seek |
+| 副屏负坐标 | 允许保存；恢复夹到 `VirtualScreen` |
 | 播放列表过长 | 右键子菜单最多显示 40 项 |
 
 ## 外部依赖
