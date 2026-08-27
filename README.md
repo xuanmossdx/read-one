@@ -13,8 +13,6 @@
 
 解压主包后运行 `Start.bat`（推荐）或 `read-one.exe`。数据保存在程序同目录（便携）。
 
-> 源码与开发文档：[xuanmossdx/read](https://github.com/xuanmossdx/read)
-
 ## 功能概要
 
 - 书架 / 最近阅读 / 章节目录 / 书签
