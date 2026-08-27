@@ -1,14 +1,24 @@
-﻿# 文档
+﻿# 使用说明
 
-## 下载与启动说明
+## 下载与安装
 
-- 第一次安装：先解压 `正式版/`，运行 `正式版\Start.bat`
-- 如果 `Start.bat` 提示缺运行库，再运行 `依赖包\Install-Runtime.bat`
-- 运行库装好后，后续通常只需保留 `正式版/`
-- `依赖包/` 安装完成后一般可以删除
+1. 打开 [Releases](https://github.com/xuanmossdx/read-one/releases)，下载最新主程序压缩包并解压  
+2. 双击启动脚本（推荐）或主程序启动  
+3. 若提示缺少运行环境，再下载同页面的「运行库」包并按其中说明安装；装好后一般只需保留主程序文件夹  
 
-## 功能文档
+程序为便携方式：解压即用，进度与设置保存在程序所在目录。
 
-- [bili-player.md](design/bili-player.md) — B 站小窗
-- [speaker-mute.md](design/speaker-mute.md) — 扬声器静音
-- [listen-timer.md](design/listen-timer.md) — 听书定时关闭
+## 更新
+
+从 Releases 下载新版本后，用新文件覆盖旧程序，**不要删除**自己的进度与书籍。运行库只需在电脑上缺环境时装一次。
+
+## 功能介绍
+
+- [阅读与章节目录](design/chapter-toc.md)  
+- [听书操作台](design/listen-console.md)  
+- [听书定时关闭](design/listen-timer.md)  
+- [本地视频小窗](design/local-video-player.md)  
+- [B 站小窗](design/bili-player.md)  
+- [扬声器静音](design/speaker-mute.md)  
+
+版本变更见 [更新日志](tech/changelog.md)。
