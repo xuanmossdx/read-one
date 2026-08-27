@@ -1,1 +1,1 @@
-read-one 2.0.1
+read-one 1.0
