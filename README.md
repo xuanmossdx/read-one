@@ -6,7 +6,7 @@
 
 ## 下载
 
-请到本仓库 **[Releases](https://github.com/xuanmossdx/read-one/releases)** 下载最新 zip。
+请到本仓库 **[Releases](https://github.com/xuanmossdx/read-one/releases)** 下载最新 zip（更新说明见各版本 Release notes）。
 
 - `read-one-vX.Y.Z.zip`：主包（后续更新通常只下这个）
 - `read-one-runtime-vX.Y.Z.zip`：`.NET Framework 4.7.2` 依赖包（仅首次缺运行库时需要）
@@ -14,10 +14,6 @@
 解压主包后运行 `Start.bat`（推荐）或 `read-one.exe`。数据保存在程序同目录（便携）。
 
 > 源码与开发文档：[xuanmossdx/read](https://github.com/xuanmossdx/read)
-
-## 2.0.1 修复
-
-- **目录识别**：修复 mobi（及同类粘行）章节标题与正文粘在一行时漏进目录的问题（如《蛊真人》第一百五十七节等）；并修正「落幕/风幕/序幕」等含「幕」字标题、标题内书名号、括号内句号、HTML 实体等误杀。
 
 ## 功能概要
 
