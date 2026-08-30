@@ -2,9 +2,33 @@
 
 本地隐蔽阅读器：看书、听书、本地视频小窗、B 站小窗，以及可选的 AI 助手。
 
-**当前版本：1.0**
+**当前版本：1.0**（一键安装脚本已就绪；有新版本时请看 Releases）
 
-## 下载与安装
+## 一键安装（推荐，无需安装 Node 等任何开发工具）
+
+只用 **Windows 自带的 PowerShell**。打开要安装的文件夹，地址栏输入 `powershell` 回车，粘贴下面命令：
+
+```powershell
+irm https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex
+```
+
+国内若直连慢，可先试镜像（镜像站不稳定时请改用上面的直连）：
+
+```powershell
+irm https://ghfast.top/https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex
+```
+
+若提示执行策略，用这一整行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex"
+```
+
+安装位置：当前目录下的 `read-one\`。装完后运行 `read-one\Start.bat`。
+
+脚本会自动下载最新 Release 主包，并检查 .NET Framework 4.7.2（已有则跳过安装）。
+
+## 手动下载与安装
 
 请到本仓库 **[Releases](https://github.com/xuanmossdx/read-one/releases)** 下载最新压缩包。
 
@@ -26,8 +50,9 @@
 
 ## 更新说明
 
-- 新版本请仍从 [Releases](https://github.com/xuanmossdx/read-one/releases) 下载  
+- 新版本请仍从 [Releases](https://github.com/xuanmossdx/read-one/releases) 下载，或使用上方一键安装覆盖程序文件  
 - 更新时用新程序文件覆盖旧程序即可，**保留**自己的阅读进度与书籍目录  
 - 不要把已用过、含个人进度的整个文件夹当作「干净安装包」再发给别人  
+- QQ 群（获取最新版）：**1109580513**
 
 更细的功能介绍见 [docs](docs/README.md)；各版本变更见 [更新日志](docs/tech/changelog.md)。
