@@ -149,4 +149,5 @@ if (Test-Net472) {
 Write-Host ""
 Write-Host "安装完成: $InstallRoot"
 Write-Host "请运行: $InstallRoot\Start.bat"
+Write-Host "QQ 群（获取最新版 / 交流）：1109580513"
 try { Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue } catch {}
