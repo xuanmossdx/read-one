@@ -32,22 +32,26 @@ function Get-MirroredUrls([string]$Url) {
 function Invoke-MirrorGet([string]$Url, [string]$OutFile = $null) {
   $urls = Get-MirroredUrls $Url
   $last = $null
+  $n = 0
   foreach ($u in $urls) {
+    $n++
     try {
-      Write-Host "尝试: $u"
       if ($OutFile) {
         Invoke-WebRequest -Uri $u -OutFile $OutFile -UseBasicParsing -Headers @{ "User-Agent" = "read-one-install" }
+        return $true
       } else {
         return (Invoke-RestMethod -Uri $u -Headers @{ "User-Agent" = "read-one-install"; "Accept" = "application/vnd.github+json" })
       }
-      return $true
     } catch {
       $last = $_
-      Write-Host ("失败: " + $_.Exception.Message)
+      # 镜像常会 403/证书失败，属正常回退，不向用户刷屏；仅在全部失败时抛错
     }
   }
-  if ($last) { throw $last }
-  throw "全部源失败: $Url"
+  $hint = "网络不可达。可稍后重试，或手动下载: $ReleasesPage"
+  if ($last) {
+    throw ($hint + "`n详情: " + $last.Exception.Message)
+  }
+  throw $hint
 }
 
 function Test-Net472 {
@@ -62,7 +66,7 @@ function Test-Net472 {
 $InstallRoot = Join-Path (Get-Location).Path "read-one"
 Write-Host "安装目录: $InstallRoot"
 
-Write-Host "查询最新 Release..."
+Write-Host "正在获取最新版本（优先国内加速，失败则直连 GitHub）..."
 $release = Invoke-MirrorGet $ApiLatest
 $tag = $release.tag_name
 $assets = @($release.assets)
@@ -81,8 +85,9 @@ if (-not $main) {
 $work = Join-Path $env:TEMP ("read-one-install-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $work | Out-Null
 $zip = Join-Path $work "main.zip"
-Write-Host "下载主包 $($main.name) ($tag)..."
+Write-Host "已找到 $tag，正在下载 $($main.name)..."
 Invoke-MirrorGet $main.browser_download_url $zip | Out-Null
+Write-Host "下载完成，正在安装..."
 
 $extract = Join-Path $work "extract"
 New-Item -ItemType Directory -Path $extract | Out-Null
