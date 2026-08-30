@@ -2,10 +2,9 @@
 <#
 .SYNOPSIS
   一键安装 read-one 到当前目录下的 read-one\
-.NOTES
-  发行仓同步本脚本到仓库根后，用户可：
-    irm https://ghfast.top/https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex
-  或直连：
+.DESCRIPTION
+  从本仓库 Releases 下载最新主程序；若本机缺少 .NET Framework 4.7.2 再安装运行库。
+  用法（在目标文件夹打开 PowerShell）：
     irm https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
@@ -44,7 +43,6 @@ function Invoke-MirrorGet([string]$Url, [string]$OutFile = $null) {
       }
     } catch {
       $last = $_
-      # 镜像常会 403/证书失败，属正常回退，不向用户刷屏；仅在全部失败时抛错
     }
   }
   $hint = "网络不可达。可稍后重试，或手动下载: $ReleasesPage"
