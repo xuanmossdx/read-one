@@ -17,15 +17,17 @@ $ApiLatest = "https://api.github.com/repos/$OwnerRepo/releases/latest"
 $ReleasesPage = "https://github.com/$OwnerRepo/releases"
 $QqGroup = "1109580513"
 $ApiTimeoutSec = 12
-# 单源超时（并行）；整轮大约等于该值，避免 60 秒卡死还扫不完
-$DownloadTimeoutSec = 25
+# 单源超时（并行）；整轮大约等于该值
+$DownloadTimeoutSec = 30
 $WaitSliceMs = 2000
 $RetrySleepSec = 2
 $MaxRetryRounds = 0
 
-# 只保留近期实测能拉到真 zip / API 的前缀（过期站已剔除）
+# 兜底镜像：仅保留近期实测能下到真 zip 的（过期/空包站已剔除）
+# 下载顺序在 Get-MirroredUrls：先 GitHub 直连，再镜像
 # 与 HttpMirrorClient 同步
 $MirrorPrefixes = @(
+  "https://gh.ddlc.top/",
   "https://gh-proxy.com/"
 )
 
@@ -222,7 +224,7 @@ function Invoke-MirrorGetParallel {
       $msg = $_.Exception.Message
       Write-Host ("  本轮失败：{0}" -f $msg) -ForegroundColor Yellow
       if ($script:MaxRetryRounds -gt 0 -and $round -ge $script:MaxRetryRounds) {
-        throw ("已重试 {0} 轮仍失败。手动下载：{1}`nQQ 群：{2}`n{3}" -f $round, $script:ReleasesPage, $script:QqGroup, $msg)
+        throw ("已重试 {0} 轮仍失败。可手动下载：{1}`n或进 QQ 群获取安装包：{2}`n{3}" -f $round, $script:ReleasesPage, $script:QqGroup, $msg)
       }
       Write-Host ("  {0} 秒后重试（Ctrl+C 取消）..." -f $script:RetrySleepSec)
       Start-Sleep -Seconds $script:RetrySleepSec
@@ -265,14 +267,17 @@ try {
     } | Select-Object -First 1
   }
   if (-not $main) {
-    throw "Release 中未找到主程序压缩包。请手动下载：$ReleasesPage"
+    throw "Release 中未找到主程序压缩包。可手动下载：$ReleasesPage`n或进 QQ 群获取安装包：$QqGroup"
   }
 
   $work = Join-Path $env:TEMP ("read-one-install-" + [guid]::NewGuid().ToString("N"))
   New-Item -ItemType Directory -Path $work | Out-Null
   $zip = Join-Path $work "main.zip"
-  # 双通道：浏览器下载链 + API 资源链（后者常比 github.com/releases/download 更稳）
-  $dlUrls = @($main.browser_download_url, $main.url) | Where-Object { $_ } | Select-Object -Unique
+  # 优先 API 资源链（与获取版本同一通道），浏览器链 + 镜像兜底
+  $dlUrls = @()
+  if ($main.url) { $dlUrls += [string]$main.url }
+  if ($main.browser_download_url) { $dlUrls += [string]$main.browser_download_url }
+  $dlUrls = @($dlUrls | Select-Object -Unique)
   Write-Host "已找到 $tag，正在下载 $($main.name)..."
   Invoke-MirrorGetParallel -Urls $dlUrls -OutFile $zip -TimeoutSec $DownloadTimeoutSec -Purpose "主程序安装包" | Out-Null
   Write-Host "下载完成，正在安装..."
@@ -314,7 +319,10 @@ try {
     $runtime = $assets | Where-Object { $_.name -match 'runtime' -and $_.name -like '*.zip' } | Select-Object -First 1
     if ($runtime) {
       $rz = Join-Path $work "runtime.zip"
-      $rUrls = @($runtime.browser_download_url, $runtime.url) | Where-Object { $_ } | Select-Object -Unique
+      $rUrls = @()
+      if ($runtime.url) { $rUrls += [string]$runtime.url }
+      if ($runtime.browser_download_url) { $rUrls += [string]$runtime.browser_download_url }
+      $rUrls = @($rUrls | Select-Object -Unique)
       Invoke-MirrorGetParallel -Urls $rUrls -OutFile $rz -TimeoutSec $DownloadTimeoutSec -Purpose "运行库安装包" | Out-Null
       $re = Join-Path $work "runtime"
       New-Item -ItemType Directory -Path $re | Out-Null
@@ -345,7 +353,7 @@ try {
   Write-Host "安装失败：" -ForegroundColor Red
   Write-Host $_.Exception.Message
   Write-Host ""
-  Write-Host "手动下载：$ReleasesPage"
-  Write-Host "QQ 群：$QqGroup"
+  Write-Host "可手动下载：$ReleasesPage"
+  Write-Host "或进 QQ 群获取安装包：$QqGroup"
   Wait-ExitPause -Code 1
 }
