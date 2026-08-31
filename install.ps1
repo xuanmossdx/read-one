@@ -3,9 +3,9 @@
 .SYNOPSIS
   一键安装 read-one 到当前目录下的 read-one\
 .DESCRIPTION
-  从发行仓 Releases 下载最新主程序；本机已有 .NET Framework 4.7.2 则跳过运行库。
-  多国内加速节点与 GitHub 直连并行竞速；失败会自动换源并持续重试直到成功（Ctrl+C 可取消）。
-  用法（在目标文件夹打开 PowerShell）：
+  从发行仓 Releases 下载最新主程序。仅保留实测可用源；安装包用浏览器链 + API 资源链双通道。
+  失败持续重试直到成功（Ctrl+C 取消）。
+  用法：
     irm https://raw.githubusercontent.com/xuanmossdx/read-one/main/install.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
@@ -16,36 +16,31 @@ $OwnerRepo = "xuanmossdx/read-one"
 $ApiLatest = "https://api.github.com/repos/$OwnerRepo/releases/latest"
 $ReleasesPage = "https://github.com/$OwnerRepo/releases"
 $QqGroup = "1109580513"
-$ApiTimeoutSec = 15
-$DownloadTimeoutSec = 60
-$WaitSliceMs = 3000
-$RetrySleepSec = 3
-# 0 = 一直重试直到成功；验收脚本可改成 1
+$ApiTimeoutSec = 12
+# 单源超时（并行）；整轮大约等于该值，避免 60 秒卡死还扫不完
+$DownloadTimeoutSec = 25
+$WaitSliceMs = 2000
+$RetrySleepSec = 2
 $MaxRetryRounds = 0
 
-# 与程序内 HttpMirrorClient 镜像列表保持同步（含直连，并行竞速）
+# 只保留近期实测能拉到真 zip / API 的前缀（过期站已剔除）
+# 与 HttpMirrorClient 同步
 $MirrorPrefixes = @(
-  "https://gh-proxy.com/",
-  "https://ghproxy.net/",
-  "https://ghfast.top/",
-  "https://mirror.ghproxy.com/",
-  "https://github.moeyy.xyz/",
-  "https://gh.llkk.cc/",
-  "https://gh.tryxd.cn/",
-  "https://gh.ddlc.top/",
-  "https://hub.gitmirror.com/",
-  "https://ghproxy.homeboyc.cn/",
-  "https://github.akams.cn/",
-  "https://ghps.cc/",
-  "https://tvv.tw/"
+  "https://gh-proxy.com/"
 )
 
-function Get-MirroredUrls([string]$Url) {
+function Get-UrlHost([string]$Url) {
+  try { return ([uri]$Url).Host } catch { return "unknown" }
+}
+
+function Get-MirroredUrls([string[]]$Urls) {
   $list = New-Object System.Collections.Generic.List[string]
-  # 直连优先加入竞速：部分镜像会快速返回空包/假页面
-  $list.Add($Url)
-  foreach ($p in $MirrorPrefixes) {
-    $list.Add(($p.TrimEnd("/") + "/" + $Url))
+  foreach ($u in $Urls) {
+    if ([string]::IsNullOrWhiteSpace($u)) { continue }
+    $list.Add($u.Trim())
+    foreach ($p in $MirrorPrefixes) {
+      $list.Add(($p.TrimEnd("/") + "/" + $u.Trim()))
+    }
   }
   return ,$list.ToArray()
 }
@@ -54,13 +49,16 @@ function Start-HttpGetTask {
   param(
     [string]$Uri,
     [string]$OutFile,
-    [int]$TimeoutSec
+    [int]$TimeoutSec,
+    [string]$Accept
   )
   $handler = New-Object System.Net.Http.HttpClientHandler
   $client = New-Object System.Net.Http.HttpClient($handler)
   $client.Timeout = [TimeSpan]::FromSeconds($TimeoutSec)
   [void]$client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "read-one-install")
-  [void]$client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/vnd.github+json")
+  if ($Accept) {
+    [void]$client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", $Accept)
+  }
 
   if ($OutFile) {
     $task = $client.GetByteArrayAsync($Uri)
@@ -90,19 +88,29 @@ function Test-ZipBytes([byte[]]$bytes) {
   return ($bytes -and $bytes.Length -gt 10240 -and $bytes[0] -eq 0x50 -and $bytes[1] -eq 0x4B)
 }
 
+function Get-AcceptForUrl([string]$Uri, [bool]$IsFile) {
+  if (-not $IsFile) { return "application/vnd.github+json" }
+  # API 资源下载必须用 octet-stream，否则只返回 JSON 元数据
+  if ($Uri -match '/releases/assets/') { return "application/octet-stream" }
+  return "*/*"
+}
+
 function Invoke-MirrorGetParallelOnce {
   param(
-    [string]$Url,
+    [string[]]$Urls,
     [string]$OutFile = $null,
     [int]$TimeoutSec = 12,
     [string]$Purpose = "资源"
   )
-  $urls = Get-MirroredUrls $Url
-  Write-Host ("  并行尝试 {0} 个下载源（本轮最多约 {1} 秒）..." -f $urls.Count, $TimeoutSec)
+  $expanded = Get-MirroredUrls $Urls
+  Write-Host ("  并行尝试 {0} 个下载源（单源最多 {1} 秒）..." -f $expanded.Count, $TimeoutSec)
 
   $items = New-Object System.Collections.Generic.List[object]
-  foreach ($u in $urls) {
-    try { [void]$items.Add((Start-HttpGetTask -Uri $u -OutFile $OutFile -TimeoutSec $TimeoutSec)) } catch {}
+  foreach ($u in $expanded) {
+    try {
+      $acc = Get-AcceptForUrl -Uri $u -IsFile:([bool]$OutFile)
+      [void]$items.Add((Start-HttpGetTask -Uri $u -OutFile $OutFile -TimeoutSec $TimeoutSec -Accept $acc))
+    } catch {}
   }
   if ($items.Count -eq 0) { throw "无法创建网络请求" }
 
@@ -124,7 +132,11 @@ function Invoke-MirrorGetParallelOnce {
     $idx = [System.Threading.Tasks.Task]::WaitAny($taskArr, $waitMs)
     if ($idx -lt 0) {
       if ([DateTime]::UtcNow -ge $deadline) {
-        Write-Host "  本轮全部下载源超时"
+        # 取消剩余，避免挂死
+        foreach ($it in $remaining) {
+          try { $it.Client.CancelPendingRequests() } catch {}
+        }
+        Write-Host "  本轮超时，已取消剩余源"
         break
       }
       $elapsed = [int]([DateTime]::UtcNow - $started).TotalSeconds
@@ -134,28 +146,29 @@ function Invoke-MirrorGetParallelOnce {
 
     $winner = $remaining[$idx]
     [void]$remaining.RemoveAt($idx)
+    $hostName = Get-UrlHost $winner.Uri
 
     try {
       if ($winner.Task.IsFaulted) {
         $ex = $winner.Task.Exception.GetBaseException()
         $lastMsg = $ex.Message
         $failCount++
-        Write-Host ("  有源失败（累计 {0}），继续等其余源..." -f $failCount)
+        Write-Host ("  失败 [{0}]（累计 {1}）" -f $hostName, $failCount)
       } elseif ($winner.Task.IsCanceled) {
         $lastMsg = "已取消或超时"
         $failCount++
-        Write-Host ("  有源超时（累计 {0}），继续等其余源..." -f $failCount)
+        Write-Host ("  超时 [{0}]（累计 {1}）" -f $hostName, $failCount)
       } else {
         $result = $winner.Task.Result
         if ($OutFile) {
           $bytes = [byte[]]$result
           if (-not (Test-ZipBytes $bytes)) {
             $failCount++
-            $lastMsg = "无效安装包（空包或非 zip）"
-            Write-Host ("  源返回无效文件（累计 {0}），继续等其余源..." -f $failCount)
+            $lastMsg = "无效安装包"
+            Write-Host ("  无效文件 [{0}] len={1}（累计 {2}）" -f $hostName, $(if ($bytes) { $bytes.Length } else { 0 }), $failCount)
           } else {
             [IO.File]::WriteAllBytes($OutFile, $bytes)
-            Write-Host "  下载成功"
+            Write-Host ("  下载成功 [{0}]" -f $hostName)
             $winnerOk = $true
             $winnerResult = $true
             break
@@ -165,9 +178,9 @@ function Invoke-MirrorGetParallelOnce {
           if (-not (Test-ReleaseJson $text)) {
             $failCount++
             $lastMsg = "无效版本信息"
-            Write-Host ("  源返回无效数据（累计 {0}），继续等其余源..." -f $failCount)
+            Write-Host ("  无效数据 [{0}]（累计 {1}）" -f $hostName, $failCount)
           } else {
-            Write-Host "  获取成功"
+            Write-Host ("  获取成功 [{0}]" -f $hostName)
             $winnerOk = $true
             $winnerResult = $text
             break
@@ -177,7 +190,7 @@ function Invoke-MirrorGetParallelOnce {
     } catch {
       $lastMsg = $_.Exception.Message
       $failCount++
-      Write-Host ("  有源失败（累计 {0}），继续等其余源..." -f $failCount)
+      Write-Host ("  失败 [{0}]（累计 {1}）" -f $hostName, $failCount)
     } finally {
       Close-HttpItem $winner
     }
@@ -187,14 +200,14 @@ function Invoke-MirrorGetParallelOnce {
   Close-HttpItemList $items
 
   if ($winnerOk) { return $winnerResult }
-  $hint = "无法获取${Purpose}：本轮镜像与 GitHub 均未成功。"
+  $hint = "无法获取${Purpose}：本轮可用源均未成功。"
   if ($lastMsg) { throw ($hint + " 详情：" + $lastMsg) }
   throw $hint
 }
 
 function Invoke-MirrorGetParallel {
   param(
-    [string]$Url,
+    [string[]]$Urls,
     [string]$OutFile = $null,
     [int]$TimeoutSec = 12,
     [string]$Purpose = "资源"
@@ -204,14 +217,14 @@ function Invoke-MirrorGetParallel {
     $round++
     Write-Host (">>> 第 {0} 轮：获取{1}" -f $round, $Purpose)
     try {
-      return Invoke-MirrorGetParallelOnce -Url $Url -OutFile $OutFile -TimeoutSec $TimeoutSec -Purpose $Purpose
+      return Invoke-MirrorGetParallelOnce -Urls $Urls -OutFile $OutFile -TimeoutSec $TimeoutSec -Purpose $Purpose
     } catch {
       $msg = $_.Exception.Message
       Write-Host ("  本轮失败：{0}" -f $msg) -ForegroundColor Yellow
       if ($script:MaxRetryRounds -gt 0 -and $round -ge $script:MaxRetryRounds) {
         throw ("已重试 {0} 轮仍失败。手动下载：{1}`nQQ 群：{2}`n{3}" -f $round, $script:ReleasesPage, $script:QqGroup, $msg)
       }
-      Write-Host ("  {0} 秒后自动换源重试（按 Ctrl+C 可取消）..." -f $script:RetrySleepSec)
+      Write-Host ("  {0} 秒后重试（Ctrl+C 取消）..." -f $script:RetrySleepSec)
       Start-Sleep -Seconds $script:RetrySleepSec
     }
   }
@@ -237,10 +250,9 @@ function Wait-ExitPause {
 try {
   $InstallRoot = Join-Path (Get-Location).Path "read-one"
   Write-Host "安装目录：$InstallRoot"
-  Write-Host "无梯子也可试：将并行多镜像并持续重试，直到成功。"
 
   Write-Host "正在获取最新版本信息..."
-  $json = Invoke-MirrorGetParallel -Url $ApiLatest -TimeoutSec $ApiTimeoutSec -Purpose "版本信息"
+  $json = Invoke-MirrorGetParallel -Urls @($ApiLatest) -TimeoutSec $ApiTimeoutSec -Purpose "版本信息"
   $release = $json | ConvertFrom-Json
   $tag = $release.tag_name
   $assets = @($release.assets)
@@ -259,8 +271,10 @@ try {
   $work = Join-Path $env:TEMP ("read-one-install-" + [guid]::NewGuid().ToString("N"))
   New-Item -ItemType Directory -Path $work | Out-Null
   $zip = Join-Path $work "main.zip"
+  # 双通道：浏览器下载链 + API 资源链（后者常比 github.com/releases/download 更稳）
+  $dlUrls = @($main.browser_download_url, $main.url) | Where-Object { $_ } | Select-Object -Unique
   Write-Host "已找到 $tag，正在下载 $($main.name)..."
-  Invoke-MirrorGetParallel -Url $main.browser_download_url -OutFile $zip -TimeoutSec $DownloadTimeoutSec -Purpose "主程序安装包" | Out-Null
+  Invoke-MirrorGetParallel -Urls $dlUrls -OutFile $zip -TimeoutSec $DownloadTimeoutSec -Purpose "主程序安装包" | Out-Null
   Write-Host "下载完成，正在安装..."
 
   $extract = Join-Path $work "extract"
@@ -300,7 +314,8 @@ try {
     $runtime = $assets | Where-Object { $_.name -match 'runtime' -and $_.name -like '*.zip' } | Select-Object -First 1
     if ($runtime) {
       $rz = Join-Path $work "runtime.zip"
-      Invoke-MirrorGetParallel -Url $runtime.browser_download_url -OutFile $rz -TimeoutSec $DownloadTimeoutSec -Purpose "运行库安装包" | Out-Null
+      $rUrls = @($runtime.browser_download_url, $runtime.url) | Where-Object { $_ } | Select-Object -Unique
+      Invoke-MirrorGetParallel -Urls $rUrls -OutFile $rz -TimeoutSec $DownloadTimeoutSec -Purpose "运行库安装包" | Out-Null
       $re = Join-Path $work "runtime"
       New-Item -ItemType Directory -Path $re | Out-Null
       Expand-Archive -Path $rz -DestinationPath $re -Force
